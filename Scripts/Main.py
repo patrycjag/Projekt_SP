@@ -1,6 +1,5 @@
 # TensorFlow and tf.keras
-import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
+import tensorflow as tf
 from tensorflow import keras
 
 # Helper libraries
@@ -8,11 +7,27 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 print(tf.__version__)
-X_1 = tf.placeholder(tf.float32, name = "X_1")
-X_2 = tf.placeholder(tf.float32, name = "X_2")
+def get_dataset(file_path, **kwargs):
+  dataset = tf.data.experimental.make_csv_dataset(
+      file_path,
+      batch_size=5, # Artificially small to make examples easier to show.
+      label_name='Rzeczywiste zapotrzebowanie KSE',
+      column_names=['Data', 'Godz', 'Dobowa prognoza zapotrzebowania KSE', 'Rzeczywiste zapotrzebowanie KSE'],
+      na_value="?",
+      num_epochs=1,
+      ignore_errors=True,
+      **kwargs)
 
-multiply = tf.multiply(X_1, X_2, name = "multiply")
+  return dataset
 
-with tf.Session() as session:
-    result = session.run(multiply, feed_dict={X_1:[1,2,3], X_2:[4,5,6]})
-    print(result)
+
+train_file_path = './../Data/JULY_2020.csv'
+raw_train_data = get_dataset(train_file_path)
+
+def show_batch(dataset):
+  for batch, label in dataset.take(1):
+    for key, value in batch.items():
+      print("{:20s}: {}".format(key,value.numpy()))
+
+
+show_batch(raw_train_data)
